@@ -24,7 +24,6 @@ const getOrders = async (req, res) => {
 };
 
 
-
 // Controller function for completing an order
 const completeOrder = async (req, res) => {
     try {
