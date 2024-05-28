@@ -50,7 +50,7 @@ const verifyJWT = (req, res, next) => {
         req.userId = decoded.userId; // Attach userId to request object
         next();
     });
-}
+}   
 
 // Routes
 app.post('/signup', async (req, res) => {
