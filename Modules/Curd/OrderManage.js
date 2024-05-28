@@ -12,7 +12,7 @@ const createOrder = async (req, res) => {
         res.status(500).json({ message: 'Error creating order', error });
     }
 };
-
+    
 // Controller function for fetching all orders
 const getOrders = async (req, res) => {
     try {
