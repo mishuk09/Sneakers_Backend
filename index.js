@@ -10,7 +10,6 @@ const Auth = require('./Schema/Auth'); // Import the Auth model
 const post = require('./Modules/Curd/Additems');
 const authRoutes = require('./Modules/Curd/AuthRoutes'); // Import auth routes
 const orderRoutes = require('./Modules/Curd/OrderManage'); // Import the Order routes
-
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -50,7 +49,7 @@ const verifyJWT = (req, res, next) => {
         req.userId = decoded.userId; // Attach userId to request object
         next();
     });
-}   
+}
 
 // Routes
 app.post('/signup', async (req, res) => {
@@ -105,6 +104,39 @@ app.post('/signin', async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
+
+
+// Update user profile
+app.put('/update-profile', verifyJWT, async (req, res) => {
+    try {
+        const { firstName, lastName, gender, email, address, mobile, newPassword } = req.body;
+        const userId = req.userId;
+
+        const updatedData = {
+            firstName,
+            lastName,
+            gender,
+            email,
+            address,
+            mobile
+        };
+
+        if (newPassword) {
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            updatedData.password = hashedPassword;
+        }
+
+        const updatedUser = await Auth.findByIdAndUpdate(userId, updatedData, { new: true });
+
+        res.status(200).json(updatedUser);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: 'Failed to update profile' });
+    }
+});
+
+
 
 // Use routes
 app.use('/posts', post);
