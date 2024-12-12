@@ -75,18 +75,20 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+
 app.post('/signin', async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        // Find user by email
         const user = await Auth.findOne({ email });
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        // Validate password
         const validPassword = await bcrypt.compare(password, user.password);
-
         if (!validPassword) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
@@ -98,7 +100,13 @@ app.post('/signin', async (req, res) => {
             { expiresIn: '1h' }
         );
 
-        res.status(200).json({ token });
+        // Send token, email, and name in the response
+        res.status(200).json({
+            token,
+            email: user.email,
+            name: user.firstName,  // Assuming 'name' exists in the user schema
+            address: user.address  // Assuming 'name' exists in the user schema
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -144,10 +152,27 @@ app.use('/auth', authRoutes); // Use the auth routes
 app.use('/item', orderRoutes); // Use the order routes
 
 
-// Protected route
-app.get('/dashboard', verifyJWT, (req, res) => {
-    res.status(200).json({ message: 'Welcome to Dashboard!' });
+// Dashboard
+
+app.get('/dashboard', verifyJWT, async (req, res) => {
+    try {
+        // Fetch user data using the userId from the decoded JWT token
+        const user = await Auth.findById(req.userId).select('-password'); // Exclude password field
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Send user profile data as response
+        res.status(200).json({ profile: user });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
 });
+
+// Protected route
+
 app.get('/addpost', verifyJWT, (req, res) => {
     res.status(200).json({ message: 'Welcome to mqttp!' });
 });
