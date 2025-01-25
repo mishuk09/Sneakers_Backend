@@ -5,7 +5,8 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config(); // Load environment variables from .env file
-const Auth = require('./Schema/Auth'); // Import the Auth model
+// const Auth = require('./Schema/Auth'); // Import the Auth model
+const Client = require('./Schema/Client'); // Import the Auth model
 
 const post = require('./Modules/Curd/Additems');
 const authRoutes = require('./Modules/Curd/AuthRoutes'); // Import auth routes
@@ -59,7 +60,7 @@ app.post('/signup', async (req, res) => {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = new Auth({
+        const newUser = new Client({
             firstName,
             lastName,
             email,
@@ -81,7 +82,7 @@ app.post('/signin', async (req, res) => {
         const { email, password } = req.body;
 
         // Find user by email
-        const user = await Auth.findOne({ email });
+        const user = await Client.findOne({ email });
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' });
@@ -135,7 +136,7 @@ app.put('/update-profile', verifyJWT, async (req, res) => {
             updatedData.password = hashedPassword;
         }
 
-        const updatedUser = await Auth.findByIdAndUpdate(userId, updatedData, { new: true });
+        const updatedUser = await Client.findByIdAndUpdate(userId, updatedData, { new: true });
 
         res.status(200).json(updatedUser);
     } catch (error) {
@@ -157,7 +158,7 @@ app.use('/item', orderRoutes); // Use the order routes
 app.get('/dashboard', verifyJWT, async (req, res) => {
     try {
         // Fetch user data using the userId from the decoded JWT token
-        const user = await Auth.findById(req.userId).select('-password'); // Exclude password field
+        const user = await Client.findById(req.userId).select('-password'); // Exclude password field
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
